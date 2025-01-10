@@ -12,3 +12,13 @@ def analyze_text(text):
             break
     
     return issue_category
+# Example ai_model.py
+def analyze_text(transcription):
+    # Example logic to categorize the issue based on the transcription
+    if "paint" in transcription.lower():
+        return "Paint"  # Return the department name (e.g., "Paint")
+    elif "electrical" in transcription.lower():
+        return "Electrical"
+    else:
+        return "General"  # Default category
+

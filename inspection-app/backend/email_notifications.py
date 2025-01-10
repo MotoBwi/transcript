@@ -1,15 +1,26 @@
-# email_notifications.py
-from flask_mail import Mail, Message
-from models import get_department_email
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import smtplib
 
-# Initialize Flask-Mail
-mail = Mail()
+def send_email(issue_category, transcription, email):
+    try:
+        # Set up the message
+        msg = MIMEMultipart()
+        msg['From'] = 'bapan.dgart@gmail.com'  # Replace with your email
+        msg['To'] = email
+        msg['Subject'] = f'Issue Categorized as {issue_category}'
+        
+        # Body of the email
+        body = f"Issue: {issue_category}\nTranscription: {transcription}"
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # Set up the server and send the email
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login('bapan.dgart@gmail.com', 'tcqq puzw kptj tfsm')  # Replace with your email credentials
+            text = msg.as_string()
+            server.sendmail('bapan.dgart@gmail.com', email, text)  # Replace with your email
 
-def send_email(issue_category, issue_description):
-    department_email = get_department_email(issue_category)  # Fetch email based on category
-    subject = f'New {issue_category} Issue Reported'
-    body = f'Issue Description: {issue_description}'
-    
-    msg = Message(subject, recipients=[department_email])
-    msg.body = body
-    mail.send(msg)
+        print("Email sent successfully!")
+    except Exception as e:
+        print(f"Failed to send email: {e}")
