@@ -8,10 +8,32 @@
 </head>
 <body class="bg-gray-100">
 
+  <!-- Main Container -->
+  <div class="container mx-auto mt-10">
+    <!-- Title Section -->
+    <h1 class="text-3xl text-center mb-6">Welcome to the Inspection App</h1>
+    
+    <!-- Profile and Logout Section on Right -->
+    <div class="flex justify-end items-center">
+      <div class="relative">
+        <!-- User's Full Name -->
+        <span class="text-lg font-semibold cursor-pointer" id="userName">{{ user_info.name }} {{ user_info.surname }}</span>
+
+        <!-- Dropdown Menu -->
+        <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded shadow-lg">
+          <div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer" onclick="window.location.href='/profile'">Profile</div>
+          <div class="px-4 py-2 text-red-500 hover:bg-gray-100 cursor-pointer" onclick="window.location.href='/logout'">Logout</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Section -->
   <div class="flex justify-center items-center min-h-screen">
     <div class="bg-white p-8 rounded shadow-lg w-1/2">
       <h1 class="text-2xl font-bold mb-4">Inspection System</h1>
 
+      <!-- Inspection Form -->
       <form action="/inspect" method="POST" enctype="multipart/form-data">
         <div class="mb-4">
           <label for="file" class="block text-gray-700">Upload Inspection Audio</label>
@@ -22,5 +44,14 @@
     </div>
   </div>
 
+  <script>
+    // Toggle the visibility of the dropdown menu when user name is clicked
+    document.getElementById('userName').addEventListener('click', function () {
+      var dropdown = document.getElementById('dropdownMenu');
+      dropdown.classList.toggle('hidden');
+    });
+  </script>
+  
 </body>
 </html>
+   

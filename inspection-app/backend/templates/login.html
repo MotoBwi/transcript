@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+    <div class="bg-white p-8 rounded shadow-md w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-4">Login</h2>
+        <form action="/login" method="POST">
+            <div class="mb-4">
+                <label for="username" class="block text-gray-700">Username</label>
+                <input type="text" id="username" name="username" class="w-full border rounded px-3 py-2">
+            </div>
+            <div class="mb-4">
+                <label for="password" class="block text-gray-700">Password</label>
+                <input type="password" id="password" name="password" class="w-full border rounded px-3 py-2">
+            </div>
+            <button type="submit" class="w-full bg-blue-500 text-white rounded py-2">Login</button>
+        </form>
+        <!-- Flash message container -->
+        <div id="popup" class="hidden fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg">
+            {{ get_flashed_messages()[0] if get_flashed_messages() else '' }}
+        </div>
+    </div>
+
+    <!-- JavaScript to show the popup -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const popup = document.getElementById('popup');
+            if (popup.textContent.trim() !== '') {
+                popup.classList.remove('hidden');
+                setTimeout(() => {
+                    popup.classList.add('hidden');
+                }, 3000); // Hide after 3 seconds
+            }
+        });
+    </script>
+</body>
+</html>

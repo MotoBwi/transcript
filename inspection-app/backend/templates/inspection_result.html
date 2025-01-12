@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection Result</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+    <div class="bg-white p-8 rounded shadow-md w-full max-w-lg">
+        <h1 class="text-2xl font-bold mb-4">Inspection Result</h1>
+
+        <!-- Display status message -->
+        <p class="mb-2"><strong>Status:</strong> <span class="text-green-500">{{ status }}</span></p>
+
+        <!-- Display transcription -->
+        <p class="mb-2"><strong>Transcription:</strong> {{ transcription }}</p>
+
+        <!-- Display the department notified -->
+        <p class="mb-4"><strong>Department Notified:</strong> {{ department }}</p>
+
+        <!-- Email Notification Details -->
+        <div class="mt-6">
+            <h2 class="text-xl font-semibold mb-3">Email Notification Details:</h2>
+            
+            <!-- Show email subject -->
+            <p class="mb-2"><strong>Subject:</strong> {{ email_subject }}</p>
+
+            <!-- Show the email sent to -->
+            <p class="mb-2"><strong>Email Sent To:</strong> {{ email_id }}</p>
+
+            <!-- Show the message body -->
+            <p class="mb-2"><strong>Message:</strong> {{ message }}</p>
+        </div>
+
+        <!-- Inspection time -->
+        <div class="mt-6">
+            <h2 class="text-xl font-semibold mb-3">Inspection Time:</h2>
+            <p class="mb-2"><strong>Time:</strong> {{ inspection_time }}</p>
+        </div>
+
+        <!-- Back to home button -->
+        <a href="/" class="block mt-4 bg-blue-500 text-white text-center rounded py-2">Back to Home</a>
+    </div>
+</body>
+</html>

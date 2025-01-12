@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Profile</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+
+  <!-- Profile Section -->
+  <div class="container mx-auto mt-10">
+    <h1 class="text-3xl text-center mb-6">Edit Profile</h1>
+
+    <!-- Back Button -->
+    <div class="mb-4">
+      <a href="/" class="text-blue-500 hover:text-blue-700">
+        <button class="bg-gray-200 text-black p-2 rounded">Back</button>
+      </a>
+    </div>
+
+    <form action="/profile" method="POST" enctype="multipart/form-data" class="w-1/2 mx-auto">
+      <div class="mb-4">
+        <label for="name" class="block text-gray-700">First Name</label>
+        <input type="text" id="name" name="name" class="mt-2 p-2 w-full border rounded" value="{{ user_info.name }}" required>
+      </div>
+
+      <div class="mb-4">
+        <label for="surname" class="block text-gray-700">Last Name</label>
+        <input type="text" id="surname" name="surname" class="mt-2 p-2 w-full border rounded" value="{{ user_info.surname }}" required>
+      </div>
+
+      <div class="mb-4">
+        <label for="department" class="block text-gray-700">Department</label>
+        <input type="text" id="department" name="department" class="mt-2 p-2 w-full border rounded" value="{{ user_info.department }}" required>
+      </div>
+
+      <div class="mb-4">
+        <label for="post" class="block text-gray-700">Post</label>
+        <input type="text" id="post" name="post" class="mt-2 p-2 w-full border rounded" value="{{ user_info.post }}" required>
+      </div>
+
+      <button type="submit" class="bg-blue-500 text-white p-2 w-full rounded">Save Changes</button>
+    </form>
+  </div>
+
+</body>
+</html>

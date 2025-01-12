@@ -21,4 +21,3 @@ def analyze_text(transcription):
         return "Electrical"
     else:
         return "General"  # Default category
-
