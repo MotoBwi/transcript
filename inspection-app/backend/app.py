@@ -1,16 +1,17 @@
-from flask import Flask, render_template, request, jsonify, redirect, session, flash
+from flask import Flask, render_template, request, jsonify, redirect, session
 import os
-from datetime import datetime
-import pytz
-from werkzeug.utils import secure_filename
-from models import create_db, get_user_info, update_user_info, validate_user
-from flask import send_from_directory
+from transcribe import transcribe_audio
+from ai_model import analyze_text
+from email_notifications import send_email
+from models import create_db, get_department_email, insert_transcription, validate_user, create_user
+from flask import Flask, render_template, request, redirect, session, flash
+
 
 app = Flask(__name__)
 app.secret_key = 'd0c38d56fa99f546432e06aa0146b9f4527db5356c105377'
 
 UPLOAD_FOLDER = 'uploads/'
-ALLOWED_EXTENSIONS = {'wav', 'mp3', 'flac', 'm4a', 'ogg', 'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'wav', 'mp3', 'flac', 'm4a', 'ogg'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Initialize the database
@@ -19,25 +20,11 @@ create_db()
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Function to get the current time in IST (Indian Standard Time)
-def get_indian_time():
-    indian_timezone = pytz.timezone("Asia/Kolkata")
-    indian_time = datetime.now(indian_timezone)
-    return indian_time.strftime('%Y-%m-%d %H:%M:%S')
-
 @app.route('/')
 def home():
     if 'user' not in session:
         return redirect('/login')
-
-    user_info = get_user_info(session['user'])
-    
-    if not user_info:
-        flash('User info not found.', 'error')
-        return redirect('/login')
-
-    return render_template('index.html', user_info=user_info)
-
+    return render_template('index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -45,76 +32,69 @@ def login():
         username = request.form['username']
         password = request.form['password']
         
-        if validate_user(username, password):
+        # Validate the user credentials
+        if validate_user(username, password):  # Replace with your validation logic
             session['user'] = username
             return redirect('/')
         else:
+            # Use Flask's flash mechanism to display the popup
             flash('Invalid credentials. Please try again.', 'error')
             return redirect('/login')
     
     return render_template('login.html')
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if create_user(username, password):
+            return jsonify({'status': 'success', 'message': 'User registered successfully'})
+        else:
+            return jsonify({'status': 'failure', 'message': 'Username already exists'})
+    return render_template('register.html')
 
 @app.route('/logout')
 def logout():
     session.pop('user', None)
     return redirect('/login')
 
-
-@app.route('/profile', methods=['GET', 'POST'])
-def profile():
-    if 'user' not in session:
+@app.route('/inspect', methods=['POST'])
+def inspect():
+    if 'user' not in session:  # Ensure the user is logged in
         return redirect('/login')
-
-    # Get the user info
-    user_info = get_user_info(session['user'])
-
-    if request.method == 'POST':
-        # Handle profile update (name, surname, department, post)
-        name = request.form['name']
-        surname = request.form['surname']
-        department = request.form['department']
-        post = request.form['post']
-        profile_picture = request.files.get('profile_picture')  # Get new profile picture
-
-        # If a profile picture is uploaded, save it
-        if profile_picture:
-            # Save the profile picture and get the filename path
-            profile_picture_filename = os.path.join(app.config['UPLOAD_FOLDER'], profile_picture.filename)
-            profile_picture.save(profile_picture_filename)
-        else:
-            # If no new profile picture, use the current one
-            profile_picture_filename = user_info['profile_picture']
-
-        # Update the user's info in the database
-        update_user_info(session['user'], name, surname, department, post, profile_picture_filename)
-
-        flash('Profile updated successfully!', 'success')
-        return redirect('/profile')
-
-    return render_template('profile.html', user_info=user_info)
-
-
-
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'profile_picture' not in request.files:
-        return 'No file part'
     
-    file = request.files['profile_picture']
-    
-    if file.filename == '':
-        return 'No selected file'
-    
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        return 'File uploaded successfully'
-    
-# Serve files from the 'uploads' folder
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory('uploads', filename)
+    if 'file' not in request.files:
+        return redirect(request.url)
+
+    file = request.files['file']
+    if file.filename == '' or not allowed_file(file.filename):
+        return "File type not allowed"
+
+    filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    file.save(filename)
+
+    # Transcribe the audio file
+    transcription = transcribe_audio(filename)
+
+    # Analyze the transcription
+    issue_category = analyze_text(transcription)
+
+    # Get department email for notification
+    department_email = get_department_email(issue_category)
+
+    if department_email:
+        send_email(issue_category, transcription, department_email)
+
+    # Insert transcription data into the database
+    username = session['user']  # Get the username from the session
+    insert_transcription(username, transcription, f"Issue categorized as {issue_category}", "success")
+
+    return jsonify({
+        'status': 'success',
+        'transcription': transcription,
+        'category': issue_category
+    })
 
 
 if __name__ == '__main__':
