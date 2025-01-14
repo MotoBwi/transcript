@@ -2,12 +2,12 @@ import sqlite3
 
 DATABASE = 'inspection_system.db'
 
-# Function to create the SQLite database and tables
+# Function to create the SQLite database and table
 def create_db():
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
 
-    # Create the 'departments' table
+    # Create the 'departments' table (if it doesn't already exist)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS departments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -16,23 +16,14 @@ def create_db():
         )
     ''')
 
-    # Create the 'transcriptions' table
+    # Create the 'transcriptions' table (if it doesn't already exist)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS transcriptions (
-            user TEXT NOT NULL,                        -- Stores the username of the uploader
-            transcription TEXT NOT NULL,               -- Stores the transcription text
-            message TEXT NOT NULL,                     -- Status message of the transcription
-            status TEXT NOT NULL,                      -- Status of the operation (e.g., success, failure)
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP -- Automatic timestamp
-        )
-    ''')
-
-    # Create the 'users' table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL
+            transcription TEXT NOT NULL,
+            message TEXT NOT NULL,
+            status TEXT NOT NULL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ''')
 
@@ -43,40 +34,29 @@ def create_db():
 def get_department_email(department_name):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
+
+    # Query the department email from the database
     cursor.execute('SELECT email FROM departments WHERE name = ?', (department_name,))
     result = cursor.fetchone()
-    conn.close()
-    return result[0] if result else None
 
-# Function to insert transcription data
-def insert_transcription(username, transcription, message, status):
-    conn = sqlite3.connect(DATABASE)
+    conn.close()
+
+    if result:
+        return result[0]
+    else:
+        return None  # Return None if no department is found
+
+# Function to insert transcription data into the database
+def insert_transcription(transcription, message, status):
+    conn = sqlite3.connect(DATABASE)  # Connect to the database
     cursor = conn.cursor()
+
+    # SQL command to insert data into the transcriptions table
     cursor.execute('''
-        INSERT INTO transcriptions (user, transcription, message, status)
-        VALUES (?, ?, ?, ?)
-    ''', (username, transcription, message, status))
+        INSERT INTO transcriptions (transcription, message, status)
+        VALUES (?, ?, ?)
+    ''', (transcription, message, status))
+
+    # Commit the changes and close the connection
     conn.commit()
     conn.close()
-
-# Function to validate user credentials
-def validate_user(username, password):
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM users WHERE username = ? AND password = ?', (username, password))
-    result = cursor.fetchone()
-    conn.close()
-    return result is not None
-
-# Function to create a new user
-def create_user(username, password):
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    try:
-        cursor.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, password))
-        conn.commit()
-        return True
-    except sqlite3.IntegrityError:
-        return False
-    finally:
-        conn.close()
